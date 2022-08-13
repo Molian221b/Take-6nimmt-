@@ -1,0 +1,94 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.Scanner;
+
+public class StartGame {
+    public static void main(String[] args) {
+        System.out.println("欢迎来到\"Take 6nimmt!\"世界！");
+        System.out.println("请输入参赛者人数：");//这里要做个人数判断，暂时没做
+        Scanner scan_players_num = new Scanner(System.in);//扫描参赛人数输入流
+        int players_num = scan_players_num.nextInt();//参赛人数
+        String[] players = new String[players_num];//创建参赛人数数组
+        System.out.println(Arrays.toString(players));//输出players数组
+        for (int i = 1; i < players_num + 1; i++) {
+            String temp_name = "player" + Integer.toString(i);
+            System.out.println("请输入第" + i + "位参赛者的名字：");
+            Scanner scan = new Scanner(System.in);
+            String scan_name = scan.next();
+            players[i-1] = scan_name;
+            System.out.println(temp_name + ":" + scan_name);  //打印输入
+            System.out.println(Arrays.toString(players));
+        }
+//        Player player1 = new Player("上官");
+//        Player player2 = new Player("彩鸡");
+//        GameBoard game = new GameBoard(player1, player2);
+//        ArrayList<Integer> temp = new ArrayList<Integer>();
+//        temp.add(1);
+//        temp.add(2);
+//        temp.add(3);
+//        System.out.println(temp);
+    }
+    }
+//class Player{
+//    String name;
+//    ArrayList[] hands = new ArrayList[10];
+//    public Player(String name){
+//        this.name = name;
+//        System.out.println(name+"已出现");
+//    }
+//    public void playCard(){
+//        System.out.println("这是您"+this.name+"的手牌:"+this.hands);
+//        System.out.println("请选择一张打出(输入数字)：");  //还未做错误判断
+//    }
+//}
+
+//class GameBoard{
+//    int[] cards = new int[24];
+//    ArrayList<Integer> cards = new ArrayList<Integer>();
+//    int rounds = 10;
+//    Player player1;
+//    Player player2;
+
+//    public GameBoard(Player...players){
+//        String[] players_name = players.length;
+
+//        this.player1 = players[0];
+//        this.player2 = players[1];
+//        System.out.println("玩家"+player1.name+"进入战斗状态");
+//        System.out.println("玩家"+player2.name+"进入战斗状态");
+//        System.out.println(players.getClass());
+//        System.out.println(Arrays.toString(players));
+//        for(int i=0; i<this.cards.length; i++){
+//            this.cards[i] = i;
+//            }
+//        Arrays.sort(this.cards);
+//        System.out.println("初始牌堆：" + Arrays.toString(this.cards));
+//    }
+
+//    public GameBoard(Player player1, Player player2){
+//        this.player1 = player1;
+//        this.player2 = player2;
+//        System.out.println("玩家"+player1.name+"进入战斗状态");
+//        System.out.println("玩家"+player2.name+"进入战斗状态");
+//        for(int i=0; i<this.cards.length; i++){
+//            this.cards[i] = i;
+//        }
+//        Arrays.sort(this.cards);
+//        System.out.println("初始牌堆：" + Arrays.toString(this.cards));
+//    }
+//    public void dealCards(){
+//        Random random = new Random();
+//        int[] temp_cards = this.cards.clone(); //抽牌堆深拷贝
+//        for(int i=0; i<10; i++) {
+//            int temp = random.nextInt(cards.length); //随机取抽牌堆一个下标
+//            this.player1.hands[i] = temp_cards[i];
+////            temp_cards.remove(temp); //从临时抽牌堆删除分配给player1的卡牌
+//        }
+//        System.out.println(this.player1.name + "的手牌为：" + Arrays.toString(this.player1.hands));
+//    }
+//    public void drawBoard(){
+//
+//    }
+
+
