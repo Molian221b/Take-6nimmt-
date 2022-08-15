@@ -1,0 +1,76 @@
+import java.util.*;
+
+public class StartGame {
+    public static void main(String[] args) {
+
+        System.out.println("欢迎来到\"Take 6nimmt!\"世界！");
+        System.out.println("请输入参赛者人数：");//这里要做个人数判断，暂时没做
+        Scanner scan_players_num = new Scanner(System.in);//扫描参赛人数输入流
+        int players_num = scan_players_num.nextInt();//参赛人数
+        Player[] players = new Player[players_num];//创建参赛人数组
+        System.out.println(Arrays.toString(players));//输出players数组
+        for (int i = 0; i < players_num; i++) {
+            String temp_name = "player" + Integer.toString(i+1);//拼接字符串 player+数字
+            System.out.println("请输入第" + (i+1) + "位参赛者的名字：");
+            Scanner scan = new Scanner(System.in);
+            String scan_name = scan.next(); //参赛者名字
+            players[i] = new Player(scan_name);
+            System.out.println("----------------");
+        }
+        GameBoard game = new GameBoard("上官","彩鸡","yoyo","文萱妹妹","龙哥");
+
+        System.out.println("游戏开始！");
+    }
+}
+
+
+class Player{
+    String name;
+    ArrayList<Integer> hands = new ArrayList<Integer>();
+    public Player(String name){
+        this.name = name;
+        System.out.println(name+"已出现");
+    }
+    public void drawCard(){  //cards是抽牌堆里的全局变量
+        Random random = new Random();
+        for(int i=0;i<10;i++){
+            int temp = random.nextInt(0,GameBoard.cards.size());
+            int tempNum = GameBoard.cards.get(temp);
+            this.hands.add(tempNum);
+            GameBoard.cards.remove(new Integer(tempNum));//不能remove(tempNum),因为这样会默认为用下标删除
+
+        }
+        this.hands.sort(Comparator.naturalOrder());
+    }
+//    public void getCard(){
+//        //还未完成
+//        System.out.println("----------------");
+//        System.out.println(this.name+"的手牌："+this.hands);
+//        System.out.println("----------------");
+//    }
+//    public int playCard(){  //会返回这次打出的牌
+//        System.out.println("这是您"+this.name+"的手牌:"+this.hands);
+//        System.out.println(hands);
+//        System.out.println("请选择一张打出(输入数字)：");  //还未做错误判断
+//        Scanner scan = new Scanner(System.in);
+//        int card = scan.nextInt();  //这次出的牌，类型为int
+//        return card;
+//    }
+}
+
+class GameBoard {
+    int rounds = 10;
+    Player[] players;
+    public static ArrayList<Integer> cards = new ArrayList<Integer>();
+    public GameBoard(String... playerNames) {//注意，这里传入的参数是个String数组
+        int playersCount = playerNames.length;
+        players = new Player[playersCount];
+        for(int i=0; i < playersCount; i++) {
+            players[i] = new Player(playerNames[i]);
+        }
+        for (int i = 0; i < playersCount*10+4; i++) {
+            GameBoard.cards.add(i + 1);
+        }
+    }
+}
+
