@@ -1,0 +1,20 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+
+public class Test {
+    public static void main(String[] args) {
+        ArrayList<Integer> a = new ArrayList<>();
+        ArrayList<Integer> b = new ArrayList<>();
+        ArrayList[] c = {a,b};
+        a.add(1);
+        a.add(2);
+        b.add(11);
+        b.add(22);
+//        b.add(c[0].get(1));//这样写会报错
+//        java: incompatible types: java.lang.Object cannot be converted to java.lang.Integer
+        b.add((Integer)c[0].get(1));//得这样写才行，不明白为什么
+        System.out.println(b);
+        System.out.println("---------------");
+        System.out.println(c[0].get(1).getClass());//明明不加(Integer)的情况下，c[0].get(1)本身也是Integer
+    }
+}
