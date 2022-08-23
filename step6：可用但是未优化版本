@@ -1,0 +1,235 @@
+import java.util.*;
+
+public class StartGame {
+    public static void main(String[] args) {
+        System.out.println("欢迎来到\"Take 6nimmt!\"世界！");
+        System.out.println("请输入参赛者人数：");//这里要做个人数判断，暂时没做
+        Scanner scan_players_num = new Scanner(System.in);//扫描参赛人数输入流
+        int players_num = scan_players_num.nextInt();//参赛人数
+        ArrayList<String> playerNames = new ArrayList<>(); //存放参赛人名的数组
+        for (int i = 0; i < players_num; i++) {
+            String temp_name = "player" + Integer.toString(i+1);//拼接字符串 player+数字
+            System.out.println("请输入第" + (i+1) + "位参赛者的名字：");
+            Scanner scan = new Scanner(System.in);
+            String scan_name = scan.next(); //参赛者名字
+            System.out.println(scan_name + "已出现！");
+            playerNames.add(scan_name);
+            System.out.println("----------------");
+        }
+        GameBoard game = new GameBoard(playerNames);
+        System.out.println("游戏开始！");
+        System.out.println("来吧，抽卡！");
+        System.out.println("牌桌：");
+        game.dealCards(); //发牌，之后抽牌堆CameBoard.cards中还剩4张牌，已排序
+//        game.initBoard();  //初始化各种数据，暂时用不到
+        //把剩下4张牌放入每行
+        GameBoard.row1.add(GameBoard.cards.get(0));
+        GameBoard.row2.add(GameBoard.cards.get(1));
+        GameBoard.row3.add(GameBoard.cards.get(2));
+        GameBoard.row4.add(GameBoard.cards.get(3));
+        game.drawBoard();
+        // 这4步是为了让每行末尾数字放进数组tailCards
+        GameBoard.tailCards[0] = GameBoard.row1.get(0);
+        GameBoard.tailCards[1] = GameBoard.row2.get(0);
+        GameBoard.tailCards[2] = GameBoard.row3.get(0);
+        GameBoard.tailCards[3] = GameBoard.row4.get(0);
+        for(int i=0;i<10;i++){
+            game.oneRound();
+            System.out.println("第"+(i+1)+"轮结束");
+        }
+        System.out.println("----------------");
+        for(int i=0;i<GameBoard.players.size();i++) {
+            Player toolMan = GameBoard.players.get(i);
+            System.out.println("这是" + toolMan.name + "被迫拿到的牌：" + toolMan.getCards);
+            System.out.println("牛头数为："+toolMan.calculate());
+            System.out.println("----------------");
+        }
+    }
+}
+
+class Player{
+    String name;
+    int curCard;
+    ArrayList<Integer> hands = new ArrayList<>(); //玩家的手牌
+    ArrayList<Integer> getCards = new ArrayList<>(); //玩家获得的牌
+    int[] referHands = new int[10];  //复制一次手牌，方便后面findPlayer方法反向查找
+    public Player(String name){
+        this.name = name;
+    } //构造方法
+    public void drawCard(){  //cards是抽牌堆里的全局变量
+        Random random = new Random();
+        for(int i=0;i<10;i++){
+            int temp = random.nextInt(0,GameBoard.cards.size());
+            this.hands.add(GameBoard.cards.get(temp));
+            GameBoard.cards.remove(temp);//不能remove(tempNum),因为这样会默认为用下标删除
+        }
+        this.hands.sort(Comparator.naturalOrder());
+    }
+    public void copyHands(){
+        for(int i=0;i<10;i++){
+            referHands[i] = this.hands.get(i);
+        }
+    }
+    public int playCard(){ //打出1张牌
+        //还未完成
+        System.out.println("----------------");
+        System.out.println("这是你"+this.name+"的手牌："+this.hands);
+        System.out.println("请打出一张牌");
+        Scanner scan = new Scanner(System.in); //还未做判断，若输入的牌不在手牌里
+        this.curCard = scan.nextInt();
+        this.hands.remove(Integer.valueOf(curCard));  //从手牌删除打出的牌
+        System.out.println("----------------");
+        return curCard;
+    }
+    public int calculate(){
+        int count = 0;
+        for(int i=0;i<getCards.size();i++){
+            if(getCards.get(i) == 55){count += 7; continue;}
+            else if(getCards.get(i)%11==0){count += 5; continue;}
+            else if(getCards.get(i)%10==0){count += 3; continue;}
+            else if(getCards.get(i)%5==0){count += 2; continue;}
+            else{count+=1;}
+        }
+        return count;
+    }
+}
+
+class GameBoard {
+    //别忘了时时更新的数据：
+    int rounds = 10;
+    public static ArrayList<Player> players = new ArrayList<>();//玩家对象组
+    public static ArrayList<Integer> cards = new ArrayList<>();//抽牌堆卡组
+    public static ArrayList<Integer> row1 = new ArrayList<>();//棋盘上的每行
+    public static ArrayList<Integer> row2 = new ArrayList<>();
+    public static ArrayList<Integer> row3 = new ArrayList<>();
+    public static ArrayList<Integer>row4 = new ArrayList<>();
+    public static ArrayList[] rowList = {row1,row2,row3,row4};//把row1,row2,row3,row4装一起方便调用
+    public static int[] tailCards = new int[4];  //放棋盘每行尾号的数组  //注意每轮都要更新
+    public static int[] thisRoundCards; //每个玩家当前轮（共10轮）打出的手牌  //注意每轮都要更新
+    public static Player curPlayer = null;//当前牌（最小牌）的使用者  //注意每轮都要更新
+    public GameBoard(ArrayList<String> playerNames) {  //注意，这里传入的参数是个String数组
+        int playersCount = playerNames.size();  //玩家人数
+        thisRoundCards = new int[playersCount];  //玩家每轮打出的牌
+        for(int i=0; i < playersCount; i++) {
+            Player newPlayer = new Player(playerNames.get(i));
+            GameBoard.players.add(newPlayer);
+        }
+        for (int i = 0; i < playersCount*10+4; i++) {
+            GameBoard.cards.add(i + 1);
+        }
+    }
+    public void dealCards(){  //发牌
+        for (int i = 0; i < GameBoard.players.size(); i++) {
+            GameBoard.players.get(i).drawCard();  //每个玩家抽牌
+            GameBoard.players.get(i).copyHands();
+            System.out.println("测试用，显示手牌："+GameBoard.players.get(i).hands);
+        }
+    }
+    public void oneRound(){//玩家出完牌后的处理，10轮后结束
+//        int[] tempThisRoundCard = new int[GameBoard.players.size()];//用来保存之前玩家顺序，比如玩家数字是[3，50，1]，则这个数组会变成[2,0,1]。
+//        但用不着，已有其它替代方案
+        for(int i=0; i < GameBoard.players.size(); i++){  //按玩家人数循环
+            thisRoundCards[i] = players.get(i).playCard(); //每个玩家打出一张牌
+        }
+        Arrays.sort(thisRoundCards);//给每个玩家出过的牌排序，方便进行结算
+//        for(int i=0; i < GameBoard.players.size(); i++){  //获取之前玩家顺序的具体方法，用不着，已有其它替代方案
+//            tempThisRoundCard[i] = GameBoard.players.indexOf(thisRoundCard[i]);
+//        }
+        System.out.println("这轮大家打出的手牌："+Arrays.toString(thisRoundCards));//测试用，显示这轮大家出的牌
+        this.dealResult(thisRoundCards);
+        this.drawBoard();
+    }
+    public void initBoard(){ //初始化棋盘每行,游戏开始的第一步用
+    }
+    public void drawBoard(){ //画棋盘
+        System.out.println("棋盘：");
+        System.out.println(GameBoard.row1);
+        System.out.println(GameBoard.row2);
+        System.out.println(GameBoard.row3);
+        System.out.println(GameBoard.row4);
+    }
+    public void dealResult(int[] thisRoundCard){  //参数为每个参赛者的出牌卡组，已排序
+        //拿牌规则1，比4个数都小
+        if((thisRoundCard[0] < GameBoard.tailCards[0])  //第一次tailCards里的值是棋盘的4张牌，别忘了每次都要更新
+                && (thisRoundCard[0] < GameBoard.tailCards[1])
+                && (thisRoundCard[0] < GameBoard.tailCards[2])
+                && (thisRoundCard[0] < GameBoard.tailCards[3])){
+            rule1(thisRoundCard[0]); //最小的牌使用规则1
+            for(int i=1;i<players.size();i++){ //其它牌使用规则2
+                rule2(thisRoundCard[i]);
+                System.out.println(tailCards);
+            }
+        }else{
+            //拿牌规则2，放其中一个后面
+            for(int i=0;i<players.size();i++){
+                rule2(thisRoundCard[i]);
+            }
+        }
+
+    }
+    public void rule1(int curCard){  //若当前牌比棋盘都小
+        //找出打出这张最小牌的使用者
+        for(int i=0;i<players.size();i++){
+            if(players.get(i).curCard == curCard){ //如果哪个玩家的当前牌和这张最小牌相等
+                curPlayer = players.get(i);  //找出持有这张最小牌的玩家
+            }
+        }
+        System.out.println("由于棋盘上最小的牌比每一行都要小，请"+ curPlayer.name +"选择一行牌拿走（输入1，2，3，4）");
+        Scanner scan = new Scanner(System.in);
+        int choiceRow = scan.nextInt()-1;  //选一行拿走，注意这个choiceRow是1，2，3，4中的一个
+        updateRow(curPlayer,curCard,rowList[choiceRow]);
+
+    }
+    public void rule2(int curCard){  //若当前牌并未比棋盘都小
+        Player tempCurrentPlayer = findPlayer(curCard);  //找出这张牌的主人
+        int curDifference = players.size()*10+4;  //当前差值，默认最大
+        int targetRow = -1;  //目标行
+        for(int i=0;i<4;i++){ //这个for循环就是为了找到目标行
+            if(curCard < tailCards[i]){  //如果当前牌比当前尾牌小，直接跳过
+                continue;
+            }else{  //找出差值最小的那个尾数
+                int tempDiff = curCard - tailCards[i];  //用临时变量tempDiff记录差值
+                if(tempDiff < curDifference){  //如果差值小于当前值
+                    curDifference = tempDiff;  //更新当前差值
+                    targetRow = i; //找到目标行
+                     }
+            }
+        }
+        if(rowList[targetRow].size()==5){
+            updateRow(tempCurrentPlayer, curCard, rowList[targetRow]);
+        }else{
+            rowList[targetRow].add(curCard);
+            tailCards[targetRow] = curCard;
+        }
+
+    }
+    public void updateRow(Player curPlayer, int curCard, ArrayList<Integer> row){  //用最小牌更新一行，并让当前玩家获得牌
+        curPlayer.getCards.addAll(row);
+        row.clear();
+        row.add(curCard);
+        //  更新每行尾数，还挺麻烦的
+        tailCards[findRow(row)] = curCard;
+    }
+    public Player findPlayer(int aCard){
+        Player tempPlayer = null;
+        for(int i=0;i<players.size();i++){
+            for(int j=0;j<10;j++){
+                if(aCard == players.get(i).referHands[j]){
+                    tempPlayer = players.get(i);
+                    break;
+                }
+            }
+        }
+        return tempPlayer;
+    }
+    public int findRow(ArrayList<Integer> row){
+        int tempRowNum = -1;
+        for(int i=0;i<4;i++){
+            if(row == rowList[i]){
+                tempRowNum = i;
+                break;
+            }
+        }
+        return tempRowNum;
+    }
+}
